@@ -102,12 +102,14 @@ function Get-NuGetPackage{
     param(
         [Parameter(Mandatory=$true,Position=0)]
         $name,
-        [Parameter(Mandatory=$true,Position=1)] # later we can make this optional
+        [Parameter(Position=1)] # later we can make this optional
         $version,
         [Parameter(Position=2)]
+        [switch]$prerelease,
+        [Parameter(Position=3)]
         $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
 
-        [Parameter(Position=3)]
+        [Parameter(Position=4)]
         [string]$nugetUrl = $null
     )
     process{
@@ -116,8 +118,14 @@ function Get-NuGetPackage{
         }
         $toolsDir = (Get-Item $toolsDir).FullName.TrimEnd('\')
         # if it's already installed just return the path
-        $installPath = (InternalGet-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
-        if(!$installPath){
+        [string]$installPath = $null
+
+
+        if($version){
+            $installPath = (InternalGet-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
+        }
+
+        if(!$installPath -or !(test-path $installPath)){
             # install the nuget package and then return the path
             $outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\") # nuget.exe doesn't work well with trailing slash
 
@@ -125,8 +133,19 @@ function Get-NuGetPackage{
             Push-Location | Out-Null
             try{
                 Set-Location $outdir | Out-Null
-                $cmdArgs = @('install',$name,'-Version',$version,'-prerelease')
-            
+                $cmdArgs = @('install',$name)
+
+                if($version){
+                    $cmdArgs += '-Version'
+                    $cmdArgs += "$version"
+
+                    $prerelease = $true
+                }
+
+                if($prerelease){
+                    $cmdArgs += '-prerelease'
+                }
+
                 if($nugetUrl -and !([string]::IsNullOrWhiteSpace($nugetUrl))){
                     $cmdArgs += "-source"
                     $cmdArgs += $nugetUrl
@@ -134,13 +153,18 @@ function Get-NuGetPackage{
 
                 $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $outdir), ($cmdArgs -join ' ' ))
                 'Calling nuget to install a package with the following args. [{0}]' -f $nugetCommand | Write-Verbose
-                Execute-CommandString -command $nugetCommand | Out-Null
+                [string[]]$nugetResult = (Execute-CommandString -command $nugetCommand)
+                $nugetResult | Write-Verbose
+
+                if(!$installPath){
+                    $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult[0])
+                    $pkgpath = (Join-Path $toolsDir $pkgDirName)
+                    $installPath = ((Get-Item $pkgpath).FullName)
+                }
             }
             finally{
                 Pop-Location | Out-Null
             }
-
-            $installPath = (InternalGet-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
         }
 
         # it should be set by now so throw if not
@@ -149,6 +173,27 @@ function Get-NuGetPackage{
         }
 
         $installPath
+    }
+}
+
+<#
+.SYNOPSIS
+Returns the name (including version number) of the nuget package installed from the
+nuget.exe results when calling nuget.exe install.
+#>
+function InternalGet-PackagePathFromNuGetOutput{
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory=$true,Position=0)]
+        [string]$nugetOutput
+    )
+    process{
+        if(!([string]::IsNullOrWhiteSpace($nugetOutput))){
+            ([regex]"'.*'").match($nugetOutput).groups[0].value.TrimStart("'").TrimEnd("'").Replace(' ','.')
+        }
+        else{
+            throw 'nugetOutput parameter is null or empty'
+        }
     }
 }
 
