@@ -1,1 +1,3 @@
 This project aims to simplify consuming NuGet packages in PowerShell. More info coming soon...
+
+[![Build status](https://ci.appveyor.com/api/projects/status/yv76i6yybh5pv3kd?svg=true)](https://ci.appveyor.com/project/sayedihashimi/nuget-powershell)
