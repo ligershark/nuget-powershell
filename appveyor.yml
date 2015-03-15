@@ -1,0 +1,20 @@
+# Full reference at http://www.appveyor.com/docs/appveyor-yml
+
+version: 1.0.{build}
+os: Windows Server 2012 R2
+
+build_script:
+- ps: .\appveyor.ps1
+
+environment:
+  NuGetApiKey:
+    secure: HFUEQanhaxHV/sRQYznQqg7LToxSGeIoSvrmyY29PJ1eDbXxUuYrEQ6MPAsZIQFT
+  NuGetApiKeyStaging:
+    secure: HFUEQanhaxHV/sRQYznQqg7LToxSGeIoSvrmyY29PJ1eDbXxUuYrEQ6MPAsZIQFT
+
+artifacts:
+  - path: 'OutputRoot\**\*'
+
+nuget:
+  account_feed: true
+  project_feed: true

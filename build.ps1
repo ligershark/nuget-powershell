@@ -41,7 +41,7 @@ function Get-ScriptDirectory
 }
 $scriptDir = ((Get-ScriptDirectory) + "\")
 
-$global:NuGetPsSettings = New-Object PSObject -Property @{
+$global:NuGetPsBuildSettings = New-Object PSObject -Property @{
     toolsDir = "$env:LOCALAPPDATA\LigerShark\tools\"
     nugetDownloadUrl = 'http://nuget.org/nuget.exe'
 }
@@ -54,8 +54,8 @@ $global:NuGetPsSettings = New-Object PSObject -Property @{
 function Get-Nuget{
     [cmdletbinding()]
     param(
-        $toolsDir = $global:NuGetPsSettings.toolsDir,
-        $nugetDownloadUrl = $global:NuGetPsSettings.nugetDownloadUrl
+        $toolsDir = $global:NuGetPsBuildSettings.toolsDir,
+        $nugetDownloadUrl = $global:NuGetPsBuildSettings.nugetDownloadUrl
     )
     process{
         if(!(Test-Path $toolsDir)){
