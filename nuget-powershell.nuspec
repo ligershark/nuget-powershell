@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  For more info on this file format visit http://docs.nuget.org/docs/reference/nuspec-reference.
+-->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">  
+  <metadata>
+    <id>nuget-powershell</id>
+    <version>0.0.1-beta1</version>
+    <authors>Sayed Ibrahim Hashimi</authors>
+    <description>
+      This is a NuGet package which contains a module that simplifies downloading NuGet packages.
+    </description>    
+    <language>en-US</language>
+    <projectUrl>https://github.com/ligershark/nuget-powershell/</projectUrl>
+    <licenseUrl>https://github.com/ligershark/nuget-powershell/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <copyright>Copyright 2013-2014 Sayed Ibrahim Hashimi</copyright>
+    <tags>nuget powershell</tags>
+    <!-- This is hack to avoid having content in the package -->
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System"  />
+    </frameworkAssemblies>
+  </metadata>
+  <files>
+    <file src="nuget-powershell.psm1" target="tools" />
+    <file src="get-nugetps.ps1" target="tools" />
+  </files>
+</package>
