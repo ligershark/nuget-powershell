@@ -277,7 +277,7 @@ function InternalGet-PackagePathFromNuGetOutput{
     )
     process{
         if(!([string]::IsNullOrWhiteSpace($nugetOutput))){
-            ([regex]"'.*'").match($nugetOutput).groups[0].value.TrimStart("'").TrimEnd("'").Replace(' ','.')
+            ([regex]"'[^']*'").match($nugetOutput).groups[0].value.TrimStart("'").TrimEnd("'").Replace(' ','.')
         }
         else{
             throw 'nugetOutput parameter is null or empty'
