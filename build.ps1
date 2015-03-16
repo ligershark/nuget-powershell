@@ -113,8 +113,6 @@ function PublishNuGetPackage{
     }
 }
 
-
-
 function Build{
     [cmdletbinding()]
     param()
@@ -159,14 +157,52 @@ function Build{
     }
 }
 
-function Run-Tests{
+function Load-Pester{
     [cmdletbinding()]
-    param()
+    param(
+        $pesterDir = (resolve-path (Join-Path $scriptDir 'contrib\pester\'))
+    )
     process{
-        # nothing yet
+        if(!(Get-Module pester)){
+            if($env:PesterDir -and (test-path $env:PesterDir)){
+                $pesterDir = $env:PesterDir
+            }
+
+            if(!(Test-Path $pesterDir)){
+                throw ('Pester dir not found at [{0}]' -f $pesterDir)
+            }
+            $modFile = (Join-Path $pesterDir 'Pester.psm1')
+            'Loading pester from [{0}]' -f $modFile | Write-Verbose
+            Import-Module (Join-Path $pesterDir 'Pester.psm1')
+        }
     }
 }
 
+function Run-Tests{
+    [cmdletbinding()]
+    param(
+        $testDirectory = (join-path $scriptDir tests)
+    )
+    begin{ 
+        Load-Pester
+    }
+    process{
+        # go to the tests directory and run pester
+        push-location
+        set-location $testDirectory
+
+        $pesterArgs = @{}
+        if($env:ExitOnPesterFail -eq $true){
+            $pesterArgs.Add('-EnableExit',$true)
+        }
+        if($env:PesterEnableCodeCoverage -eq $true){
+            $pesterArgs.Add('-CodeCoverage','..\nuget-powershell.psm1')
+        }
+
+        Invoke-Pester @pesterArgs
+        pop-location
+    }
+}
 
 function Clean{
     [cmdletbinding()]
