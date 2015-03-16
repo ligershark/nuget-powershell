@@ -233,8 +233,12 @@ function Get-NuGetPackage{
 
                 if(!$installPath){
                     $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult[0])
-                    $pkgpath = (Join-Path $toolsDir $pkgDirName)
-                    $installPath = ((Get-Item $pkgpath).FullName)
+                    if([string]::IsNullOrWhiteSpace($pkgDirName)){
+                        $message = ('Unable to get package name from nuget.exe result [{0}]' -f ($nugetResult -join "`n"))
+                        throw $message
+                    }
+                    $pkgInstallPath = (Join-Path $toolsDir $pkgDirName)
+                    $installPath = ((Get-Item $pkgInstallPath).FullName)
 
                     # if the version is not passed with -force then the item may be downloaded twice
                     if($force -and !($version)){
