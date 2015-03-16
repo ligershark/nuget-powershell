@@ -176,7 +176,7 @@ function Get-NuGetPackage{
         $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
 
         [Parameter(Position=4)]
-        [string]$nugetUrl = $null,
+        [string]$nugetUrl = ('https://nuget.org/api/v2/'),
 
         [Parameter(Position=5)]
         [switch]$force
@@ -319,7 +319,7 @@ function Load-ModuleFromNuGetPackage{
         $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
 
         [Parameter(Position=4)]
-        $nugetUrl = $null,
+        $nugetUrl = ('https://nuget.org/api/v2/'),
 
         [Parameter(Position=5)]
         [switch]$force
