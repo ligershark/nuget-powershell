@@ -85,7 +85,7 @@ Describe 'get-nugetpackage tests' {
         $result.Exists | Should Be $true
     }
     
-    <#It 'Can use specified url' {
+    It 'Can use specified url' {
         $repodir = (join-path $TestDrive 'nugetrepo01\')
         mkdir $repodir
         $repodir = ((Get-Item $repodir).FullName)
@@ -100,7 +100,7 @@ Describe 'get-nugetpackage tests' {
         $newPkgPath = (Get-NuGetPackage -name publish-module -nugetUrl "$repodir" -prerelease)
         $newPkgPath | Should Exist
     }
-    #>
+
     It 'Returns path when already downloaded' {
         $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath2 | Should Exist
