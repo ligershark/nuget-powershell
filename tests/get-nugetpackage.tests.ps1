@@ -41,7 +41,7 @@ Describe 'get-nugetpackage tests' {
     }
 
     It 'Can use specified url' {
-        $tempDir = (join-path $TestDrive 'nugetrepo01')
+        $tempDir = (join-path $TestDrive 'nugetrepo01\')
         mkdir $tempDir
         $tempDir = ((Get-Item $tempDir).FullName)
 
