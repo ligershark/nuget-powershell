@@ -232,7 +232,7 @@ function Get-NuGetPackage{
                 $nugetResult | Write-Verbose
 
                 if(!$installPath){
-                    $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult[0])
+                    $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult -join "`n")
                     if([string]::IsNullOrWhiteSpace($pkgDirName)){
                         $message = ('Unable to get package name from nuget.exe result [{0}]' -f ($nugetResult -join "`n"))
                         throw $message
