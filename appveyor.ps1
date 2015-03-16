@@ -10,5 +10,5 @@ elseif($env:APPVEYOR_REPO_BRANCH -eq 'publish-staging'){
     .\build.ps1 -build -publishToNuget -nugetUrl https://staging.nuget.org -nugetApiKey $env:NuGetApiKeyStaging
 }
 else{
-    .\build.ps1 -build
+    .\build.ps1 -build -verbose
 }
