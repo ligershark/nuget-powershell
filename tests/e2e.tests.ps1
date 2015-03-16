@@ -71,7 +71,7 @@ Describe 'get-nugetpackage tests' {
         $pkgPath1 | Should Exist
     }
 
-    <#
+    
     It 'Folder contains .nupkg file'{
         $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease)
         'nugetPkgInstallPath1: [{0}]' -f $nugetPkgInstallPath1 | Write-Host
@@ -85,7 +85,7 @@ Describe 'get-nugetpackage tests' {
         $result.Exists | Should Be $true
     }
     
-    It 'Can use specified url' {
+    <#It 'Can use specified url' {
         $repodir = (join-path $TestDrive 'nugetrepo01\')
         mkdir $repodir
         $repodir = ((Get-Item $repodir).FullName)
