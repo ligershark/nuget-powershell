@@ -319,9 +319,9 @@ function Load-ModuleFromNuGetPackage{
         [switch]$force
     )
     process{
-        $installDir = Get-NuGetPackage -name $name -version $version -prerelease:$prerelease -nugetUrl $nugetUrl -force:$force
+        $pkgDir = Get-NuGetPackage -name $name -version $version -prerelease:$prerelease -nugetUrl $nugetUrl -force:$force
 
-        $modules = (Get-ChildItem ("$installDir\tools") '*.psm1')
+        $modules = (Get-ChildItem ("$pkgDir\tools") '*.psm1' -ErrorAction SilentlyContinue)
         foreach($module in $modules){
             $moduleFile = $module.FullName
             $moduleName = $module.BaseName
