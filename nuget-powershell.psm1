@@ -219,12 +219,12 @@ function Get-NuGetPackage{
                     $cmdArgs += '-prerelease'
                 }
 
+                $cmdArgs += '-NonInteractive'
+
                 if($nugetUrl -and !([string]::IsNullOrWhiteSpace($nugetUrl))){
                     $cmdArgs += "-source"
                     $cmdArgs += $nugetUrl
                 }
-
-                $cmdArgs += '-NonInteractive'
 
                 $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $outdir), ($cmdArgs -join ' ' ))
                 'Calling nuget to install a package with the following args. [{0}]' -f $nugetCommand | Write-Verbose
