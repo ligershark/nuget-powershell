@@ -64,7 +64,7 @@ function Update-NuGet{
     [cmdletbinding()]
     param()
     process{
-        $cmdArgs = @('update','-self')
+        $cmdArgs = @('update','-self','-NonInteractive')
 
         $command = '"{0}" {1}' -f (Get-NuGet),($cmdArgs -join ' ')
         Execute-CommandString -command $command | Write-Verbose
@@ -223,6 +223,8 @@ function Get-NuGetPackage{
                     $cmdArgs += "-source"
                     $cmdArgs += $nugetUrl
                 }
+
+                $cmdArgs += '-NonInteractive'
 
                 $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $outdir), ($cmdArgs -join ' ' ))
                 'Calling nuget to install a package with the following args. [{0}]' -f $nugetCommand | Write-Verbose

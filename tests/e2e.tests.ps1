@@ -73,6 +73,12 @@ Describe 'get-nugetpackage tests' {
 
     It 'Folder contains .nupkg file'{
         $pkgPath = (Get-NuGetPackage -name psbuild -prerelease)
+        'pkgPath: [{0}]' -f $pkgPath | Write-Host
+
+        $items = (Get-ChildItem -Path $pkgPath * -Recurse)
+        'files'|Write-Host 
+        Get-ChildItem -Path $pkgPath * -Recurse| % {$_.FullName | Write-Host}
+        #'files: [{0}]' -f (Get-ChildItem -Path $pkgPath * -Recurse) | Write-Host
         [System.IO.FileInfo]$result=(Get-ChildItem $pkgPath psbuild*.nupkg)
         $result | Should Not Be $null
         $result.Exists | Should Be $true
