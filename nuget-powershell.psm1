@@ -234,7 +234,7 @@ function Get-NuGetPackage{
                 if(!$installPath){
                     $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult -join "`n")
                     if([string]::IsNullOrWhiteSpace($pkgDirName)){
-                        $message = ('Unable to get package name from nuget.exe result [{0}]' -f ($nugetResult -join "`n"))
+                        $message = ('Unable to get package name from nuget.exe result [{0}]. Command [{1}]' -f ($nugetResult -join "`n"),$nugetCommand)
                         throw $message
                     }
                     $pkgInstallPath = (Join-Path $toolsDir $pkgDirName)
@@ -277,7 +277,7 @@ function InternalGet-PackagePathFromNuGetOutput{
     )
     process{
         if(!([string]::IsNullOrWhiteSpace($nugetOutput))){
-            ([regex]"'[^']*'").match($nugetOutput).groups[0].value.TrimStart("'").TrimEnd("'").Replace(' ','.')
+            ([regex]"'[^']*'").match((($nugetOutput -split "`n")[-1])).groups[0].value.TrimStart("'").TrimEnd("'").Replace(' ','.')
         }
         else{
             throw 'nugetOutput parameter is null or empty'

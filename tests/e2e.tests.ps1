@@ -85,6 +85,7 @@ Describe 'get-nugetpackage tests' {
         $result.Exists | Should Be $true
     }
     
+    <#
     It 'Can use specified url' {
         $repodir = (join-path $TestDrive 'nugetrepo01\')
         mkdir $repodir
@@ -100,7 +101,7 @@ Describe 'get-nugetpackage tests' {
         $newPkgPath = (Get-NuGetPackage -name publish-module -nugetUrl "$repodir" -prerelease)
         $newPkgPath | Should Exist
     }
-
+    #>
     It 'Returns path when already downloaded' {
         $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath2 | Should Exist
@@ -126,6 +127,11 @@ Describe 'get-nugetpackage tests' {
     It 'Can pass in force with passing version' {
         $pkgPath6 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force)
         $pkgPath6 | Should Exist
+    }
+
+    It 'Can install azureimageoptimizer' {
+        $pkgPath7 = (Get-NuGetPackage -name AzureImageOptimizer -prerelease)
+        $pkgPath7 | Should Exist
     }
 
     $Global:NuGetPowerShellSettings.toolsDir = $oldToolsDir
