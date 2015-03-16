@@ -59,5 +59,9 @@ Describe 'Load-ModuleFromNuGetPackage tests'{
         Load-ModuleFromNuGetPackage -name publish-module -prerelease
         $result = (Get-Module publish-module)
         [string]::IsNullOrWhiteSpace($result) | Should Be $false
+
+        if(Get-Module publish-module){
+            Remove-Module publish-module -force
+        }
     }
 }

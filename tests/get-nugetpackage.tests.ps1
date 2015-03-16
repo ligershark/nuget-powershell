@@ -31,7 +31,7 @@ Describe 'get-nugetpackage tests' {
 
     BeforeEach {
         if(Test-Path $newToolsDir){
-            Remove-Item $newToolsDir -Recurse -Force | out-null
+            Remove-Item $newToolsDir -Recurse -Force | out-null  
         }
     }
 
@@ -48,6 +48,9 @@ Describe 'get-nugetpackage tests' {
         # get a nuget pkg
         $pkgPath = (Get-NuGetPackage -name psbuild)
         Get-ChildItem $pkgPath *.nupkg | % {Copy-Item $_.FullName -Destination $tempDir}
+
+       'files:'|Write-host
+        get-childitem $tempDir * -Recurse | Write-Host
 
         $newPkgPath = (Get-NuGetPackage -name psbuild -nugetUrl "$tempDir")
         $newPkgPath | Should Exist
