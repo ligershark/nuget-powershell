@@ -18,7 +18,7 @@ if(Test-Path $modulePath){
 
     if((Get-Module $moduleName)){ Remove-Module $moduleName -Force }
     
-    Import-Module $modulePath -PassThru -DisableNameChecking | Out-Null
+    Import-Module $modulePath -PassThru -DisableNameChecking -Force | Out-Null
 }
 else{
     throw ('Unable to find module at [{0}]' -f $modulePath )

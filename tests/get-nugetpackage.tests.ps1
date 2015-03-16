@@ -27,6 +27,10 @@ else{
 Describe 'get-nugetpackage tests' {
     $oldToolsDir = $Global:NuGetPowerShellSettings.toolsDir
     $newToolsDir = (Join-Path $TestDrive 'get-nupkg\newtools\')
+    if(!(Test-Path $newToolsDir)){
+        New-Item $newToolsDir -ItemType Directory | out-null
+    }
+    $newToolsDir = ((Get-Item $newToolsDir).FullName)
     $Global:NuGetPowerShellSettings.toolsDir = $newToolsDir
 
     BeforeEach {
