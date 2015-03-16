@@ -67,23 +67,24 @@ Describe 'get-nugetpackage tests' {
     }
 
     It 'Returns path' {
-        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
-        $pkgPath | Should Exist
+        $pkgPath1 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath1 | Should Exist
     }
 
+    <#
     It 'Folder contains .nupkg file'{
-        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
-        'pkgPath: [{0}]' -f $pkgPath | Write-Host
+        $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease)
+        'nugetPkgInstallPath1: [{0}]' -f $nugetPkgInstallPath1 | Write-Host
 
-        $items = (Get-ChildItem -Path $pkgPath * -Recurse)
+        $items = (Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse)
         'files'|Write-Host 
-        Get-ChildItem -Path $pkgPath * -Recurse| % {$_.FullName | Write-Host}
+        Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse| % {$_.FullName | Write-Host}
         #'files: [{0}]' -f (Get-ChildItem -Path $pkgPath * -Recurse) | Write-Host
-        [System.IO.FileInfo]$result=(Get-ChildItem $pkgPath *.nupkg)
+        [System.IO.FileInfo]$result=(Get-ChildItem $nugetPkgInstallPath1 *.nupkg)
         $result | Should Not Be $null
         $result.Exists | Should Be $true
     }
-
+    
     It 'Can use specified url' {
         $repodir = (join-path $TestDrive 'nugetrepo01\')
         mkdir $repodir
@@ -99,32 +100,32 @@ Describe 'get-nugetpackage tests' {
         $newPkgPath = (Get-NuGetPackage -name publish-module -nugetUrl "$repodir" -prerelease)
         $newPkgPath | Should Exist
     }
-
+    #>
     It 'Returns path when already downloaded' {
-        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
-        $pkgPath | Should Exist
-        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
-        $pkgPath | Should Exist
+        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath2 | Should Exist
+        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath2 | Should Exist
     }
 
     It 'Can pass in a specific version' {
-        $pkgPath = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1)
-        $pkgPath | Should Exist
+        $pkgPath3 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1)
+        $pkgPath3 | Should Exist
     }
 
     It 'Can pass in prerelase' {
-        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
-        $pkgPath | Should Exist
+        $pkgPath4 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath4 | Should Exist
     }
 
     It 'Can pass in force without passing version' {
-        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease -force)
-        $pkgPath | Should Exist
+        $pkgPath5 = (Get-NuGetPackage -name publish-module -prerelease -force)
+        $pkgPath5 | Should Exist
     }
 
     It 'Can pass in force with passing version' {
-        $pkgPath = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force)
-        $pkgPath | Should Exist
+        $pkgPath6 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force)
+        $pkgPath6 | Should Exist
     }
 
     $Global:NuGetPowerShellSettings.toolsDir = $oldToolsDir
