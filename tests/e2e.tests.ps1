@@ -67,19 +67,19 @@ Describe 'get-nugetpackage tests' {
     }
 
     It 'Returns path' {
-        $pkgPath = (Get-NuGetPackage -name psbuild)
+        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath | Should Exist
     }
 
     It 'Folder contains .nupkg file'{
-        $pkgPath = (Get-NuGetPackage -name psbuild -prerelease)
+        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
         'pkgPath: [{0}]' -f $pkgPath | Write-Host
 
         $items = (Get-ChildItem -Path $pkgPath * -Recurse)
         'files'|Write-Host 
         Get-ChildItem -Path $pkgPath * -Recurse| % {$_.FullName | Write-Host}
         #'files: [{0}]' -f (Get-ChildItem -Path $pkgPath * -Recurse) | Write-Host
-        [System.IO.FileInfo]$result=(Get-ChildItem $pkgPath psbuild*.nupkg)
+        [System.IO.FileInfo]$result=(Get-ChildItem $pkgPath *.nupkg)
         $result | Should Not Be $null
         $result.Exists | Should Be $true
     }
@@ -90,20 +90,20 @@ Describe 'get-nugetpackage tests' {
         $repodir = ((Get-Item $repodir).FullName)
 
         # get a nuget pkg
-        $nupkgPath = (Get-NuGetPackage -name publish-module)
+        $nupkgPath = (Get-NuGetPackage -name publish-module -prerelease)
         Get-ChildItem $nupkgPath *.nupkg | % {Copy-Item $_.FullName -Destination $repodir}
 
        'files:'|Write-host
         get-childitem $repodir * -Recurse | Write-Host
 
-        $newPkgPath = (Get-NuGetPackage -name publish-module -nugetUrl "$repodir")
+        $newPkgPath = (Get-NuGetPackage -name publish-module -nugetUrl "$repodir" -prerelease)
         $newPkgPath | Should Exist
     }
 
     It 'Returns path when already downloaded' {
-        $pkgPath = (Get-NuGetPackage -name publish-module)
+        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath | Should Exist
-        $pkgPath = (Get-NuGetPackage -name publish-module)
+        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath | Should Exist
     }
 
