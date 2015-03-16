@@ -85,45 +85,45 @@ Describe 'get-nugetpackage tests' {
     }
 
     It 'Can use specified url' {
-        $tempDir = (join-path $TestDrive 'nugetrepo01\')
-        mkdir $tempDir
-        $tempDir = ((Get-Item $tempDir).FullName)
+        $repodir = (join-path $TestDrive 'nugetrepo01\')
+        mkdir $repodir
+        $repodir = ((Get-Item $repodir).FullName)
 
         # get a nuget pkg
-        $pkgPath = (Get-NuGetPackage -name psbuild)
-        Get-ChildItem $pkgPath *.nupkg | % {Copy-Item $_.FullName -Destination $tempDir}
+        $nupkgPath = (Get-NuGetPackage -name publish-module)
+        Get-ChildItem $nupkgPath *.nupkg | % {Copy-Item $_.FullName -Destination $repodir}
 
        'files:'|Write-host
-        get-childitem $tempDir * -Recurse | Write-Host
+        get-childitem $repodir * -Recurse | Write-Host
 
-        $newPkgPath = (Get-NuGetPackage -name psbuild -nugetUrl "$tempDir")
+        $newPkgPath = (Get-NuGetPackage -name publish-module -nugetUrl "$repodir")
         $newPkgPath | Should Exist
     }
 
     It 'Returns path when already downloaded' {
-        $pkgPath = (Get-NuGetPackage -name psbuild)
+        $pkgPath = (Get-NuGetPackage -name publish-module)
         $pkgPath | Should Exist
-        $pkgPath = (Get-NuGetPackage -name psbuild)
+        $pkgPath = (Get-NuGetPackage -name publish-module)
         $pkgPath | Should Exist
     }
 
     It 'Can pass in a specific version' {
-        $pkgPath = (Get-NuGetPackage -name psbuild -version 0.0.1)
+        $pkgPath = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1)
         $pkgPath | Should Exist
     }
 
     It 'Can pass in prerelase' {
-        $pkgPath = (Get-NuGetPackage -name psbuild -prerelease)
+        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath | Should Exist
     }
 
     It 'Can pass in force without passing version' {
-        $pkgPath = (Get-NuGetPackage -name psbuild -force)
+        $pkgPath = (Get-NuGetPackage -name publish-module -prerelease -force)
         $pkgPath | Should Exist
     }
 
     It 'Can pass in force with passing version' {
-        $pkgPath = (Get-NuGetPackage -name psbuild -version 0.0.1 -force)
+        $pkgPath = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force)
         $pkgPath | Should Exist
     }
 
