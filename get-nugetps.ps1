@@ -1,6 +1,6 @@
 [cmdletbinding()]
 param(
-    $versionToInstall = '0.0.1-beta4',
+    $versionToInstall = '0.0.1-beta5',
     $toolsDir = ("$env:LOCALAPPDATA\LigerShark\nuget-ps\tools\"),
     $nugetDownloadUrl = 'http://nuget.org/nuget.exe'
 )

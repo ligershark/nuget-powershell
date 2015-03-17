@@ -109,6 +109,11 @@ function PublishNuGetPackage{
 
             'Publishing nuget package with the following args: [nuget.exe {0}]' -f ($cmdArgs -join ' ') | Write-Verbose
             &(Get-Nuget) $cmdArgs
+
+            if($LASTEXITCODE -ne 0){
+                $msg = ('nuget.exe exited with a non-zero exit code during publish [{0}]' -f $LASTEXITCODE)
+                throw $msg
+            }
         }
     }
 }
