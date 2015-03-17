@@ -179,6 +179,9 @@ function Get-NuGetPackage{
         [string]$nugetUrl = ('https://nuget.org/api/v2/'),
 
         [Parameter(Position=5)]
+        [switch]$expanded,
+
+        [Parameter(Position=6)]
         [switch]$force
     )
     process{
@@ -188,8 +191,17 @@ function Get-NuGetPackage{
         $toolsDir = (Get-Item $toolsDir).FullName.TrimEnd('\')
         # if it's already installed just return the path
         [string]$installPath = $null
+        [string]$expFolderPath = $null
+        [string]$outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\")
 
-        if($version){
+        if($expanded){
+            $installPath = ('{0}\expanded\{1}' -f $toolsDir,$name)
+            if($version){
+                $installPath = ('{0}\expanded\{1}{2}' -f $toolsDir,$name,$version)
+            }
+            $outdir = $installPath
+        }
+        elseif($version){
             $installPath = (InternalGet-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
         }
 
@@ -200,7 +212,11 @@ function Get-NuGetPackage{
 
         if(!$installPath -or !(test-path $installPath)){
             # install the nuget package and then return the path
-            $outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\") # nuget.exe doesn't work well with trailing slash
+            # $outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\") # nuget.exe doesn't work well with trailing slash
+
+            if(!(Test-Path $outdir)){
+                New-Item -Path $outdir -ItemType Directory | Out-Null
+            }
 
             # set working directory to avoid needing to specify OutputDirectory, having issues with spaces
             Push-Location | Out-Null
@@ -249,6 +265,16 @@ function Get-NuGetPackage{
                     [string[]]$nugetResult = (Execute-CommandString -command $nugetCommand)
                     $nugetResult | Write-Verbose
                 }
+
+                if($expanded){
+                   $expbinpath = (Join-Path $outdir 'bin')
+                   New-Item -Path $expbinpath -ItemType Directory | Out-Null
+                   # copy lib folder to bin\
+                   Get-ChildItem $installPath -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse
+                   # copy tools folder to bin\
+                   Get-ChildItem $installPath 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse
+                }
+                
             }
             finally{
                 Pop-Location | Out-Null
@@ -261,6 +287,36 @@ function Get-NuGetPackage{
         }
 
         $installPath
+    }
+}
+
+function InternalGet-LibFolderToUse{
+    [cmdletbinding()]
+    param(
+        [Parameter(Mandatory=$true,Position=0,ValueFromPipeline=$true)]
+        [System.IO.DirectoryInfo[]]$packageInstallPath
+    )
+    process{
+        $libtocheck = @('lib\net45','lib\45','lib\net40','lib\40','lib\net35','lib\35','lib\net30','lib\30','lib\net20','20','lib\11','11','lib')
+        foreach($pkgPath in $packageInstallPath){
+            try{
+                $pkgFullPath = $pkgPath.FullName
+                Push-Location | Out-Null
+                Set-Location $pkgFullPath | out-null
+                $libfolder = $null
+                foreach($lib in $libtocheck){
+                    if(Test-Path (Join-Path $pkgFullPath $lib)){
+                        $libfolder = (Get-Item (Join-Path $pkgFullPath $lib)).FullName
+                        break
+                    }
+                }
+
+                $libfolder
+            }
+            finally{
+                Pop-Location | Out-Null
+            }
+        }
     }
 }
 

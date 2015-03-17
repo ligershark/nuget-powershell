@@ -134,6 +134,12 @@ Describe 'get-nugetpackage tests' {
         $pkgPath7 | Should Exist
     }
 
+    It 'Can install using expanded' {
+        $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease -expanded)
+        $pkgPath8 | Should Exist
+        (Join-Path $pkgPath8 'bin') | Should Exist
+    }
+
     $Global:NuGetPowerShellSettings.toolsDir = $oldToolsDir
 }
 
