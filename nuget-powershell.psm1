@@ -365,7 +365,7 @@ function InternalGet-NuGetPackageExpectedPath{
 }
 
 if(!$env:IsDeveloperMachine){
-    Export-ModuleMember -function Get-*,Set-*,Invoke-*,Save-*,Test-*,Find-*,Add-*,Remove-*,Test-*,Open-*,New-*,Execute-*,Update-*
+    Export-ModuleMember -function Get-*,Set-*,Invoke-*,Save-*,Test-*,Find-*,Add-*,Remove-*,Test-*,Open-*,New-*,Execute-*,Update-*,Load-*
 }
 else{
     # you can set the env var to expose all functions to importer. easy for development.

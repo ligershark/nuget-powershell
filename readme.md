@@ -36,6 +36,13 @@ $jsonString = @"
 'webroot: "{0}"' -f [Newtonsoft.Json.JsonConvert]::DeserializeObject($jsonString)['webroot'].value
 ```
 
+#### How to optimize images in a folder
+
+```powershell
+$imgOptExe = (Join-Path (Get-NuGetPackage AzureImageOptimizer -prerelease) 'tools\ImageCompressor.Job.exe')
+&$imgOptExe /d c:\temp\images\to-optimize
+```
+
 #### How to load a nuget-powershell module
 
 ```powershell
