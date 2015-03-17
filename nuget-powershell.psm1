@@ -270,9 +270,9 @@ function Get-NuGetPackage{
                    $expbinpath = (Join-Path $outdir 'bin')
                    New-Item -Path $expbinpath -ItemType Directory | Out-Null
                    # copy lib folder to bin\
-                   Get-ChildItem $installPath -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse
+                   Get-ChildItem $installPath -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
                    # copy tools folder to bin\
-                   Get-ChildItem $installPath 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse
+                   Get-ChildItem $installPath 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
                 }
                 
             }
