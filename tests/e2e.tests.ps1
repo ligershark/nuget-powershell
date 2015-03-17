@@ -67,13 +67,13 @@ Describe 'get-nugetpackage tests' {
     }
 
     It 'Returns path' {
-        $pkgPath1 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath1 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
         $pkgPath1 | Should Exist
     }
 
     
     It 'Folder contains .nupkg file'{
-        $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease)
+        $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
         'nugetPkgInstallPath1: [{0}]' -f $nugetPkgInstallPath1 | Write-Host
 
         $items = (Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse)
@@ -103,39 +103,49 @@ Describe 'get-nugetpackage tests' {
     }
     #>
     It 'Returns path when already downloaded' {
-        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
         $pkgPath2 | Should Exist
-        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
         $pkgPath2 | Should Exist
     }
 
     It 'Can pass in a specific version' {
-        $pkgPath3 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1)
+        $pkgPath3 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -noexpansion)
         $pkgPath3 | Should Exist
     }
 
     It 'Can pass in prerelase' {
-        $pkgPath4 = (Get-NuGetPackage -name publish-module -prerelease)
+        $pkgPath4 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
         $pkgPath4 | Should Exist
     }
 
     It 'Can pass in force without passing version' {
-        $pkgPath5 = (Get-NuGetPackage -name publish-module -prerelease -force)
+        $pkgPath5 = (Get-NuGetPackage -name publish-module -prerelease -force -noexpansion)
         $pkgPath5 | Should Exist
     }
 
     It 'Can pass in force with passing version' {
-        $pkgPath6 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force)
+        $pkgPath6 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force -noexpansion)
         $pkgPath6 | Should Exist
     }
 
     It 'Can install azureimageoptimizer' {
-        $pkgPath7 = (Get-NuGetPackage -name AzureImageOptimizer -prerelease)
+        $pkgPath7 = (Get-NuGetPackage -name AzureImageOptimizer -prerelease -noexpansion)
         $pkgPath7 | Should Exist
     }
 
-    It 'Can install using expanded' {
-        $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease -expanded)
+    It 'Can install using expansion' {
+        $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease)
+        $pkgPath8 | Should Exist
+        (Join-Path $pkgPath8 'bin') | Should Exist
+    }
+
+    It 'Can install using expansion using force' {
+        $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease -force)
+        $pkgPath8 | Should Exist
+        (Join-Path $pkgPath8 'bin') | Should Exist
+
+        $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease -force)
         $pkgPath8 | Should Exist
         (Join-Path $pkgPath8 'bin') | Should Exist
     }

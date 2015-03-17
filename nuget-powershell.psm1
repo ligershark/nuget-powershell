@@ -179,7 +179,7 @@ function Get-NuGetPackage{
         [string]$nugetUrl = ('https://nuget.org/api/v2/'),
 
         [Parameter(Position=5)]
-        [switch]$expanded,
+        [switch]$noexpansion,
 
         [Parameter(Position=6)]
         [switch]$force
@@ -194,7 +194,7 @@ function Get-NuGetPackage{
         [string]$expFolderPath = $null
         [string]$outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\")
 
-        if($expanded){
+        if(!($noexpansion)){
             $installPath = ('{0}\expanded\{1}' -f $toolsDir,$name)
             if($version){
                 $installPath = ('{0}\expanded\{1}{2}' -f $toolsDir,$name,$version)
@@ -266,7 +266,7 @@ function Get-NuGetPackage{
                     $nugetResult | Write-Verbose
                 }
 
-                if($expanded){
+                if(!($noexpansion)){
                    $expbinpath = (Join-Path $outdir 'bin')
                    New-Item -Path $expbinpath -ItemType Directory | Out-Null
                    # copy lib folder to bin\
@@ -381,7 +381,7 @@ function Load-ModuleFromNuGetPackage{
         [switch]$force
     )
     process{
-        $pkgDir = Get-NuGetPackage -name $name -version $version -prerelease:$prerelease -nugetUrl $nugetUrl -force:$force
+        $pkgDir = Get-NuGetPackage -name $name -version $version -prerelease:$prerelease -nugetUrl $nugetUrl -force:$force -noexpansion
 
         $modules = (Get-ChildItem ("$pkgDir\tools") '*.psm1' -ErrorAction SilentlyContinue)
         foreach($module in $modules){
