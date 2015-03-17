@@ -14,7 +14,7 @@ This project aims to simplify consuming NuGet packages in PowerShell. More info 
 (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/ligershark/nuget-powershell/master/get-nugetps.ps1") | iex
 
 $jsonnetpath = (Get-NuGetPackage Newtonsoft.Json -prerelease)
-Add-Type -Path (Join-Path $jsonnetpath 'lib\net45\Newtonsoft.Json.dll')
+Add-Type -Path (Join-Path $jsonnetpath 'bin\Newtonsoft.Json.dll')
 # now we can call apis from json.net
 $jsonString = @"
 {
@@ -34,6 +34,7 @@ $jsonString = @"
 "@
 
 'webroot: "{0}"' -f [Newtonsoft.Json.JsonConvert]::DeserializeObject($jsonString)['webroot'].value
+
 ```
 
 #### How to optimize images in a folder
@@ -41,10 +42,12 @@ $jsonString = @"
 ```powershell
 $imgOptExe = (Join-Path (Get-NuGetPackage AzureImageOptimizer -prerelease) 'tools\ImageCompressor.Job.exe')
 &$imgOptExe /d c:\temp\images\to-optimize
+
 ```
 
 #### How to transform an XML file using XDT
 
+```powershell
 # get sample files from gist
 (new-object Net.WebClient).DownloadString("https://gist.githubusercontent.com/sayedihashimi/581878c375db22eabd22/raw/eb4e4d5e0c66448f6aed1c898ea0c7991bd970c8/sample.config") | Set-Content .\sample.config
 (new-object Net.WebClient).DownloadString("https://gist.githubusercontent.com/sayedihashimi/581878c375db22eabd22/raw/b54d648ed5e316801b8323da91506ff9d3a136a7/sample.transform.config") | Set-Content .\sample.transform.config
@@ -58,7 +61,7 @@ $xdtexe = ('{0}\bin\SlowCheetah.Xdt.exe' -f (Get-NuGetPackage SlowCheetah.Xdt -p
 # invoke SlowCheetah.Xdt.exe
 &($xdtexe) .\sample.config .\sample.transform.config .\final.config
 
-
+```
 
 
 
