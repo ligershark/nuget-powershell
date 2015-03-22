@@ -45,6 +45,16 @@ $imgOptExe = (Join-Path (Get-NuGetPackage AzureImageOptimizer -prerelease) 'tool
 
 ```
 
+### How to minifiy css files in a folder
+
+```
+if(Test-Path "$pwd\sample-style.css"){Remove-Item "$pwd\sample-style.css"}
+
+(New-Object System.Net.WebClient).DownloadFile('http://www.csszengarden.com/examples/style.css', "$(pwd)\sample-style.css")
+
+& "$(Get-NuGetPackage -name AzureMinifier -prerelease)\bin\TextMinifier.job.exe" /d $pwd --noreport
+
+```
 #### How to transform an XML file using XDT
 
 ```powershell
