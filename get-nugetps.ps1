@@ -162,7 +162,7 @@ For more information execute:
             Import-Module -Name $modsFolder\nuget-powershell -DisableNameChecking -Force
         }
 
-        Write-Host "nuget-powershell is installed and ready to use" -Foreground Green
+        "nuget-powershell is installed and ready to use" | Write-Output
     }
 }
 
