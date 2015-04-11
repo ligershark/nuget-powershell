@@ -3,13 +3,15 @@ param(
     # actions
     [Parameter(ParameterSetName='build',Position=0)]
     [switch]$build,
+
     [Parameter(ParameterSetName='clean',Position=0)]
     [switch]$clean,
 
-    #[Parameter(ParameterSetName='getversion',Position=0)]
-    #[switch]$getversion,
-    #[Parameter(ParameterSetName='updateversion',Position=0)]
-    #[switch]$updateversion,
+    [Parameter(ParameterSetName='getversion',Position=0)]
+    [switch]$getversion,
+
+    [Parameter(ParameterSetName='setversion',Position=0)]
+    [switch]$setversion,
     
     # build parameters
     [Parameter(ParameterSetName='build',Position=1)]
@@ -27,8 +29,8 @@ param(
     #[Parameter(ParameterSetName='build',Position=5)]
     #[switch]$skipTests,
 
-    # updateversion parameters
-    [Parameter(ParameterSetName='updateversion',Position=1,Mandatory=$true)]
+    # setversion parameters
+    [Parameter(ParameterSetName='setversion',Position=1,Mandatory=$true)]
     [string]$newversion
 )
 
@@ -224,16 +226,84 @@ function Clean{
     }
 }
 
+<#
+.SYNOPSIS 
+This will inspect the publsish nuspec file and return the value for the Version element.
+#>
+function Get-Version{
+    [cmdletbinding()]
+    param(
+        [ValidateScript({test-path $_ -PathType Leaf})]
+        $nuspecFile = (Join-Path $scriptDir 'nuget-powershell.nuspec')
+    )
+    process{
+        ([xml](Get-Content $nuspecFile)).package.metadata.version
+    }
+}
+
+function Set-Version{
+    [cmdletbinding()]
+    param(
+        [Parameter(Position=0,Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$newversion,
+
+        [Parameter(Position=1)]
+        [ValidateNotNullOrEmpty()]
+        [string]$oldversion = (Get-Version),
+
+        [Parameter(Position=2)]
+        [string]$filereplacerVersion = '0.2.0-beta'
+    )
+    process{
+        'Updating version from [{0}] to [{1}]' -f $oldversion,$newversion | Write-Verbose
+        Enable-PackageDownloader
+        'trying to load file replacer' | Write-Verbose
+        Enable-NuGetModule -name 'file-replacer' -version $filereplacerVersion
+
+        $folder = $scriptDir
+        $include = '*.nuspec;*.ps*1'
+        # In case the script is in the same folder as the files you are replacing add it to the exclude list
+        $exclude = "$($MyInvocation.MyCommand.Name);"
+        $replacements = @{
+            "$oldversion"="$newversion"
+        }
+        Replace-TextInFolder -folder $folder -include $include -exclude $exclude -replacements $replacements | Write-Verbose
+        'Replacement complete' | Write-Verbose
+    }
+}
+
+function Enable-PackageDownloader{
+    [cmdletbinding()]
+    param($toolsDir = "$env:LOCALAPPDATA\LigerShark\tools\package-downloader\",
+        $pkgDownloaderDownloadUrl = 'https://raw.githubusercontent.com/aspnet/vsweb-publish/master/package-downloader.psm1')
+    process{
+        if(!(get-module package-downloader)){
+            if(!(Test-Path $toolsDir)){ New-Item -Path $toolsDir -ItemType Directory -WhatIf:$false }
+
+            $expectedPath = (Join-Path ($toolsDir) 'package-downloader.psm1')
+            if(!(Test-Path $expectedPath)){
+                'Downloading [{0}] to [{1}]' -f $pkgDownloaderDownloadUrl,$expectedPath | Write-Verbose
+                (New-Object System.Net.WebClient).DownloadFile($pkgDownloaderDownloadUrl, $expectedPath)
+                if(!$expectedPath){throw ('Unable to download package-downloader.psm1')}
+            }
+
+            'importing module [{0}]' -f $expectedPath | Write-Verbose
+            Import-Module $expectedPath -DisableNameChecking -Force -Scope Global
+        }
+    }
+}
+
 ### begin script
 
 # set build as default action if not specified
-if(!($build) -and !($clean)){
+if(!($build) -and !($clean) -and !$getversion -and !$setversion){
     $build = $true
 }
 
 if($build){ Build }
-#elseif($getversion){ GetExistingVersion }
-#elseif($updateversion){ UpdateVersion -newversion $newversion }
+elseif($getversion){ Get-Version }
+elseif($setversion){ Set-Version -newversion $newversion }
 elseif($clean){ Clean }
 else{
     $cmds = @('-build','-clean')
