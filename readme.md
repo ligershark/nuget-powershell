@@ -41,7 +41,7 @@ $jsonString = @"
 
 ```powershell
 $imgOptExe = (Join-Path (Get-NuGetPackage AzureImageOptimizer -prerelease) 'bin\ImageCompressor.Job.exe')
-&$imgOptExe /d c:\temp\images\to-optimize
+&$imgOptExe /d c:\temp\images\to-optimize --force --noreport
 
 ```
 

@@ -397,7 +397,7 @@ function Load-ModuleFromNuGetPackage{
     }
 }
 
-function InternalGet-NuGetPackageExpectedPath{
+function Get-NuGetPackageExpectedPath{
     [cmdletbinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
