@@ -202,7 +202,7 @@ function Get-NuGetPackage{
             $outdir = $installPath
         }
         elseif($version){
-            $installPath = (InternalGet-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
+            $installPath = (Get-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
         }
 
         if($force -and $installPath -and (Test-Path $installPath)){

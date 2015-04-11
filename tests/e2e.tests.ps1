@@ -33,7 +33,7 @@ Describe 'get-nuget tests' {
     It 'Can use specified url' {
         $nugetPath = (Get-Nuget)
         Remove-Item $nugetPath | out-null
-        $nugetPath = (Get-Nuget -nugetDownloadUrl http://staging.nuget.org/nuget.exe)
+        $nugetPath = (Get-Nuget -nugetDownloadUrl http://nuget.org/nuget.exe)
         $nugetPath | Should Exist
     }
 
@@ -74,7 +74,6 @@ Describe 'get-nugetpackage tests' {
     
     It 'Folder contains .nupkg file'{
         $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
-        'nugetPkgInstallPath1: [{0}]' -f $nugetPkgInstallPath1 | Write-Host
 
         $items = (Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse)
         'files'|Write-Host 
