@@ -410,13 +410,7 @@ function Get-NuGetPackageExpectedPath{
     process{
         $pathToFoundPkgFolder = $null
         $toolsDir=(get-item $toolsDir).FullName
-		$expectedNuGetPkgFolder = ((Get-Item -Path (join-path $toolsDir (('{0}.{1}' -f $name, $version))) -ErrorAction SilentlyContinue))
-
-        if($expectedNuGetPkgFolder){
-            $pathToFoundPkgFolder = $expectedNuGetPkgFolder.FullName
-        }
-
-        $pathToFoundPkgFolder
+		(join-path $toolsDir (('{0}.{1}' -f $name, $version)))
     }
 }
 
