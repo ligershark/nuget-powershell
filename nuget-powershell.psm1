@@ -405,12 +405,20 @@ function Get-NuGetPackageExpectedPath{
         [Parameter(Mandatory=$true,Position=1)] # later we can make this optional
         $version,
         [Parameter(Position=2)]
-        $toolsDir = $global:NuGetPowerShellSettings.toolsDir
+        $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
+        [Parameter(Position=3)]
+        [switch]$expandedPath
     )
     process{
         $pathToFoundPkgFolder = $null
         $toolsDir=(get-item $toolsDir).FullName
-		(join-path $toolsDir (('{0}.{1}' -f $name, $version)))
+
+        if(!$expandedPath){
+            (join-path $toolsDir (('{0}.{1}' -f $name, $version)))
+        }
+        else{
+            (join-path $toolsDir (('expanded\{0}.{1}' -f $name, $version)))
+        }
     }
 }
 
