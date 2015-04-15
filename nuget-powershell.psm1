@@ -417,7 +417,7 @@ function Get-NuGetPackageExpectedPath{
             (join-path $toolsDir (('{0}.{1}' -f $name, $version)))
         }
         else{
-            (join-path $toolsDir (('expanded\{0}.{1}' -f $name, $version)))
+            (join-path $toolsDir (('expanded\{0}{1}\{0}.{1}' -f $name, $version)))
         }
     }
 }
