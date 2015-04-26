@@ -36,7 +36,7 @@ function Get-NuGetPsPsm1{
             New-Item -Path $toolsDir -ItemType Directory | out-null
         }
 
-        $nugetPsPsm1 = (Get-ChildItem -Path "$toolsDir\nuget-powershell.$versionToInstall" -Include 'nuget-powershell.psm1' -Recurse -ErrorAction SilentlyContinue | Sort-Object -Descending -ErrorAction SilentlyContinue | Select-Object -First 1 -ErrorAction SilentlyContinue)
+        [System.IO.FileInfo]$nugetPsPsm1 = (Get-ChildItem -Path "$toolsDir\nuget-powershell.$versionToInstall" -Include 'nuget-powershell.psm1' -Recurse -ErrorAction SilentlyContinue | Sort-Object -Descending -ErrorAction SilentlyContinue | Select-Object -First 1 -ErrorAction SilentlyContinue)
 
         if(!$nugetPsPsm1){
             Push-Location | Out-Null
@@ -49,9 +49,9 @@ function Get-NuGetPsPsm1{
             'Calling nuget to install nuget-powershell with the following args. [{0} {1}]' -f $nugetPath, ($cmdArgs -join ' ') | Write-Verbose
 
             $command = (('"{0}" {1}') -f $nugetPath,($cmdArgs -join ' ' ))
-            Execute-CommandString -command $command
+            Execute-CommandString -command $command | Out-Null
 
-            $nugetPsPsm1 = (Get-ChildItem -Path "$toolsDir\nuget-powershell.$versionToInstall" -Include 'nuget-powershell.psm1' -Recurse | Sort-Object -Descending | Select-Object -First 1)
+            [System.IO.FileInfo]$nugetPsPsm1 = (Get-ChildItem -Path "$toolsDir\nuget-powershell.$versionToInstall" -Include 'nuget-powershell.psm1' -Recurse -ErrorAction SilentlyContinue | Sort-Object -Descending -ErrorAction SilentlyContinue | Select-Object -First 1 -ErrorAction SilentlyContinue)
             Pop-Location | Out-Null
         }
 
@@ -137,11 +137,11 @@ function Install-NuGetPowerShell {
         }
 
         # this will download using nuget if its not in localappdata
-        $nugetPsPsm1 = Get-NuGetPsPsm1
+        [System.IO.FileInfo]$nugetPsPsm1 = Get-NuGetPsPsm1
 
         # copy the folder to the modules folder
-
-        Copy-Item -Path "$($nugetPsPsm1.Directory.FullName)\*"  -Destination $destFolder -Recurse
+        # no need to recurse there are just a few files in the root
+        Get-ChildItem $nugetPsPsm1.Directory | Copy-Item -Destination $destFolder
 
         if ((Get-ExecutionPolicy) -eq "Restricted"){
             Write-Warning @"
