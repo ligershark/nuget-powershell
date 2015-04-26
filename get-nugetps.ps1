@@ -5,6 +5,8 @@ param(
     $nugetDownloadUrl = 'http://nuget.org/nuget.exe'
 )
 
+Set-StrictMode -Version Latest
+
 function Get-PsModulesPath{
     [cmdletbinding()]
     param()
@@ -37,8 +39,8 @@ function Get-NuGetPsPsm1{
         $nugetPsPsm1 = (Get-ChildItem -Path "$toolsDir\nuget-powershell.$versionToInstall" -Include 'nuget-powershell.psm1' -Recurse -ErrorAction SilentlyContinue | Sort-Object -Descending -ErrorAction SilentlyContinue | Select-Object -First 1 -ErrorAction SilentlyContinue)
 
         if(!$nugetPsPsm1){
-            Push-Location
-            Set-Location $toolsDir
+            Push-Location | Out-Null
+            Set-Location $toolsDir | Out-Null
             'Downloading nuget-powershell to the toolsDir' | Write-Verbose
             # nuget install nuget-powershell -Version 0.0.1-beta1 -Prerelease
             $cmdArgs = @('install','nuget-powershell','-Version',$versionToInstall,'-Prerelease')
@@ -49,12 +51,8 @@ function Get-NuGetPsPsm1{
             $command = (('"{0}" {1}') -f $nugetPath,($cmdArgs -join ' ' ))
             Execute-CommandString -command $command
 
-            #             $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $outdir), ($cmdArgs -join ' ' ))
-
-            #&"""$nugetPath""" $cmdArgs | Out-Null
-
             $nugetPsPsm1 = (Get-ChildItem -Path "$toolsDir\nuget-powershell.$versionToInstall" -Include 'nuget-powershell.psm1' -Recurse | Sort-Object -Descending | Select-Object -First 1)
-            Pop-Location
+            Pop-Location | Out-Null
         }
 
         if(!$nugetPsPsm1){
