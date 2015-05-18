@@ -23,6 +23,7 @@
   </metadata>
   <files>
     <file src="nuget-powershell.psm1" target="tools" />
+    <file src="nuget-powershell.psd1" target="tools" />
     <file src="get-nugetps.ps1" target="tools" />
   </files>
 </package>

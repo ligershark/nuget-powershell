@@ -157,7 +157,7 @@ For more information execute:
 "@
         }
         else{
-            Import-Module -Name $modsFolder\nuget-powershell -DisableNameChecking -Force
+            Import-Module -Name $modsFolder\nuget-powershell\nuget-powershell.psd1 -DisableNameChecking -Force
         }
 
         "nuget-powershell is installed and ready to use" | Write-Output

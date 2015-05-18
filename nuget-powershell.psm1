@@ -14,19 +14,19 @@ function Get-ScriptDirectory
 $scriptDir = ((Get-ScriptDirectory) + "\")
 
 $global:NuGetPowerShellSettings = New-Object PSObject -Property @{
-    toolsDir = "$env:LOCALAPPDATA\LigerShark\nuget-ps\tools\"
+    cachePath = "$env:LOCALAPPDATA\LigerShark\nuget-ps\v1\"
     nugetDownloadUrl = 'http://nuget.org/nuget.exe'
 }
 
 <#
 .SYNOPSIS
-    This will return nuget from the $toolsDir. If it is not there then it
+    This will return nuget from the $cachePath. If it is not there then it
     will automatically be downloaded before the call completes.
 #>
 function Get-Nuget{
     [cmdletbinding()]
     param(
-        $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
+        $toolsDir = $global:NuGetPowerShellSettings.cachePath,
         $nugetDownloadUrl = $global:NuGetPowerShellSettings.nugetDownloadUrl
     )
     process{
@@ -131,10 +131,10 @@ function Execute-CommandString{
 .PARAMETER prerelease
     Pass this to get the prerelease version of the NuGet package.
 
-.PARAMETER toolsDir
+.PARAMETER cachePath
     The directory where the package will be downloaded to. This is mostly an internal
     parameter but it can be used to redirect the location of the tools directory. 
-    To override this globally you can use $global:NuGetPowerShellSettings.toolsDir.
+    To override this globally you can use $global:NuGetPowerShellSettings.cachePath.
 
 .PARAMETER nugetUrl
     You can use this to download the package from a different nuget feed.
@@ -173,7 +173,7 @@ function Get-NuGetPackage{
         [Parameter(Position=2)]
         [switch]$prerelease,
         [Parameter(Position=3)]
-        $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
+        $cachePath = $global:NuGetPowerShellSettings.cachePath,
 
         [Parameter(Position=4)]
         [string]$nugetUrl = ('https://nuget.org/api/v2/'),
@@ -185,24 +185,24 @@ function Get-NuGetPackage{
         [switch]$force
     )
     process{
-        if(!(Test-Path $toolsDir)){
-            New-Item -Path $toolsDir -ItemType Directory | out-null 
+        if(!(Test-Path $cachePath)){
+            New-Item -Path $cachePath -ItemType Directory | out-null 
         }
-        $toolsDir = (Get-Item $toolsDir).FullName.TrimEnd('\')
+        $cachePath = (Get-Item $cachePath).FullName.TrimEnd('\')
         # if it's already installed just return the path
         [string]$installPath = $null
         [string]$expFolderPath = $null
-        [string]$outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\")
+        [string]$outdir = (get-item (Resolve-Path $cachePath)).FullName.TrimEnd("\")
 
         if(!($noexpansion)){
-            $installPath = ('{0}\expanded\{1}' -f $toolsDir,$name)
+            $installPath = ('{0}\expanded\{1}' -f $cachePath,$name)
             if($version){
-                $installPath = ('{0}\expanded\{1}{2}' -f $toolsDir,$name,$version)
+                $installPath = ('{0}\expanded\{1}{2}' -f $cachePath,$name,$version)
             }
             $outdir = $installPath
         }
         elseif($version){
-            $installPath = (Get-NuGetPackageExpectedPath -name $name -version $version -toolsDir $toolsDir)
+            $installPath = (Get-NuGetPackageExpectedPath -name $name -version $version -cachePath $cachePath)
         }
 
         if($force -and $installPath -and (Test-Path $installPath)){
@@ -212,7 +212,7 @@ function Get-NuGetPackage{
 
         if(!$installPath -or !(test-path $installPath)){
             # install the nuget package and then return the path
-            # $outdir = (get-item (Resolve-Path $toolsDir)).FullName.TrimEnd("\") # nuget.exe doesn't work well with trailing slash
+            # $outdir = (get-item (Resolve-Path $cachePath)).FullName.TrimEnd("\") # nuget.exe doesn't work well with trailing slash
 
             if(!(Test-Path $outdir)){
                 New-Item -Path $outdir -ItemType Directory | Out-Null
@@ -242,7 +242,7 @@ function Get-NuGetPackage{
                     $cmdArgs += $nugetUrl
                 }
 
-                $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $outdir), ($cmdArgs -join ' ' ))
+                $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $cachePath), ($cmdArgs -join ' ' ))
                 'Calling nuget to install a package with the following args. [{0}]' -f $nugetCommand | Write-Verbose
                 [string[]]$nugetResult = (Execute-CommandString -command $nugetCommand)
                 $nugetResult | Write-Verbose
@@ -253,7 +253,7 @@ function Get-NuGetPackage{
                         $message = ('Unable to get package name from nuget.exe result [{0}]. Command [{1}]' -f ($nugetResult -join "`n"),$nugetCommand)
                         throw $message
                     }
-                    $pkgInstallPath = (Join-Path $toolsDir $pkgDirName)
+                    $pkgInstallPath = (Join-Path $cachePath $pkgDirName)
                     $installPath = ((Get-Item $pkgInstallPath).FullName)
 
                     # if the version is not passed with -force then the item may be downloaded twice
@@ -267,11 +267,11 @@ function Get-NuGetPackage{
                 }
 
                 if(!($noexpansion)){
-                   $expbinpath = (Join-Path $outdir 'bin')
+                   $expbinpath = (Join-Path $outdir '__bin')
                    New-Item -Path $expbinpath -ItemType Directory | Out-Null
                    # copy lib folder to bin\
                    Get-ChildItem $installPath -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
-                   # copy tools folder to bin\
+                   # copy tools folder to __bin\
                    Get-ChildItem $installPath 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
                 }
                 
@@ -283,7 +283,7 @@ function Get-NuGetPackage{
 
         # it should be set by now so throw if not
         if(!$installPath){
-            throw ('Unable to restore nuget package. [name={0},version={1},toolsDir={2}]' -f $name, $version, $toolsDir)
+            throw ('Unable to restore nuget package. [name={0},version={1},cachePath={2}]' -f $name, $version, $cachePath)
         }
 
         $installPath
@@ -372,7 +372,7 @@ function Load-ModuleFromNuGetPackage{
         [switch]$prerelease,
 
         [Parameter(Position=3)]
-        $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
+        $cachePath = $global:NuGetPowerShellSettings.cachePath,
 
         [Parameter(Position=4)]
         $nugetUrl = ('https://nuget.org/api/v2/'),
@@ -405,19 +405,19 @@ function Get-NuGetPackageExpectedPath{
         [Parameter(Mandatory=$true,Position=1)] # later we can make this optional
         $version,
         [Parameter(Position=2)]
-        $toolsDir = $global:NuGetPowerShellSettings.toolsDir,
+        $cachePath = $global:NuGetPowerShellSettings.cachePath,
         [Parameter(Position=3)]
         [switch]$expandedPath
     )
     process{
         $pathToFoundPkgFolder = $null
-        $toolsDir=(get-item $toolsDir).FullName
+        $cachePath=(get-item $cachePath).FullName
 
         if(!$expandedPath){
-            (join-path $toolsDir (('{0}.{1}' -f $name, $version)))
+            (join-path $cachePath (('{0}.{1}' -f $name, $version)))
         }
         else{
-            (join-path $toolsDir (('expanded\{0}{1}\{0}.{1}' -f $name, $version)))
+            (join-path $cachePath (('expanded\{0}{1}\{0}.{1}' -f $name, $version)))
         }
     }
 }

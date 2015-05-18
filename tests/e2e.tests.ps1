@@ -9,7 +9,7 @@ function Get-ScriptDirectory
 
 $scriptDir = ((Get-ScriptDirectory) + "\")
 $moduleName = 'nuget-powershell'
-$modulePath = (Join-Path $scriptDir ('..\{0}.psm1' -f $moduleName))
+$modulePath = (Join-Path $scriptDir ('..\{0}.psd1' -f $moduleName))
 
 $env:IsDeveloperMachine = $true
 
@@ -52,17 +52,17 @@ Describe 'update-nuget tests'{
 }
 
 Describe 'get-nugetpackage tests' {
-    $oldToolsDir = $Global:NuGetPowerShellSettings.toolsDir
-    $newToolsDir = (Join-Path $TestDrive 'get-nupkg\newtools\')
-    if(!(Test-Path $newToolsDir)){
-        New-Item $newToolsDir -ItemType Directory | out-null
+    $oldcachePath = $Global:NuGetPowerShellSettings.cachePath
+    $newcachePath = (Join-Path $TestDrive 'get-nupkg\newtools\')
+    if(!(Test-Path $newcachePath)){
+        New-Item $newcachePath -ItemType Directory | out-null
     }
-    $newToolsDir = ((Get-Item $newToolsDir).FullName)
-    $Global:NuGetPowerShellSettings.toolsDir = $newToolsDir
+    $newcachePath = ((Get-Item $newcachePath).FullName)
+    $Global:NuGetPowerShellSettings.cachePath = $newcachePath
 
     BeforeEach {
-        if(Test-Path $newToolsDir){
-            Remove-Item $newToolsDir -Recurse -Force -ErrorAction SilentlyContinue | out-null
+        if(Test-Path $newcachePath){
+            Remove-Item $newcachePath -Recurse -Force -ErrorAction SilentlyContinue | out-null
         }
     }
 
@@ -136,20 +136,20 @@ Describe 'get-nugetpackage tests' {
     It 'Can install using expansion' {
         $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease)
         $pkgPath8 | Should Exist
-        (Join-Path $pkgPath8 'bin') | Should Exist
+        (Join-Path $pkgPath8 '__bin') | Should Exist
     }
 
     It 'Can install using expansion using force' {
         $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease -force)
         $pkgPath8 | Should Exist
-        (Join-Path $pkgPath8 'bin') | Should Exist
+        (Join-Path $pkgPath8 '__bin') | Should Exist
 
         $pkgPath8 = (Get-NuGetPackage -name SlowCheetah.Xdt -prerelease -force)
         $pkgPath8 | Should Exist
-        (Join-Path $pkgPath8 'bin') | Should Exist
+        (Join-Path $pkgPath8 '__bin') | Should Exist
     }
 
-    $Global:NuGetPowerShellSettings.toolsDir = $oldToolsDir
+    $Global:NuGetPowerShellSettings.cachePath = $oldcachePath
 }
 
 Describe 'Load-ModuleFromNuGetPackage tests'{
