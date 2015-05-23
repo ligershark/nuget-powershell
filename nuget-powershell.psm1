@@ -139,6 +139,10 @@ function Execute-CommandString{
 .PARAMETER nugetUrl
     You can use this to download the package from a different nuget feed.
 
+.PARAMETER binpath
+    When this is passed the folder where all packages are expanded into will be returned
+    instead of the root directory. This should not be used with -noexpansion.
+
 .PARAMETER force
     Used to re-download the package from the remote nuget feed.
 
@@ -182,6 +186,9 @@ function Get-NuGetPackage{
         [switch]$noexpansion,
 
         [Parameter(Position=6)]
+        [switch]$binpath,
+
+        [Parameter(Position=7)]
         [switch]$force
     )
     process{
@@ -286,7 +293,12 @@ function Get-NuGetPackage{
             throw ('Unable to restore nuget package. [name={0},version={1},cachePath={2}]' -f $name, $version, $cachePath)
         }
 
-        $installPath
+        if($binpath){
+            "$installPath\__bin\"
+        }
+        else{
+            $installPath
+        }
     }
 }
 

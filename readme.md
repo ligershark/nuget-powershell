@@ -13,8 +13,8 @@ This project aims to simplify consuming NuGet packages in PowerShell. More info 
 ```powershell
 (new-object Net.WebClient).DownloadString("https://raw.githubusercontent.com/ligershark/nuget-powershell/master/get-nugetps.ps1") | iex
 
-$jsonnetpath = (Get-NuGetPackage Newtonsoft.Json -prerelease)
-Add-Type -Path (Join-Path $jsonnetpath 'bin\Newtonsoft.Json.dll')
+$jsonnetpath = (Get-NuGetPackage Newtonsoft.Json -prerelease -binpath)
+Add-Type -Path (Join-Path $jsonnetpath 'Newtonsoft.Json.dll')
 # now we can call apis from json.net
 $jsonString = @"
 {
@@ -40,7 +40,7 @@ $jsonString = @"
 #### How to optimize images in a folder
 
 ```powershell
-$imgOptExe = (Join-Path (Get-NuGetPackage AzureImageOptimizer -prerelease) 'bin\ImageCompressor.Job.exe')
+$imgOptExe = (Join-Path (Get-NuGetPackage AzureImageOptimizer -prerelease -binpath) 'ImageCompressor.Job.exe')
 &$imgOptExe /d c:\temp\images\to-optimize --force --noreport
 
 ```
@@ -52,7 +52,7 @@ if(Test-Path "$pwd\sample-style.css"){Remove-Item "$pwd\sample-style.css"}
 
 (New-Object System.Net.WebClient).DownloadFile('http://www.csszengarden.com/examples/style.css', "$(pwd)\sample-style.css")
 
-& "$(Get-NuGetPackage -name AzureMinifier -prerelease)\bin\TextMinifier.job.exe" /d $pwd --noreport
+& "$(Get-NuGetPackage -name AzureMinifier -prerelease -binpath)TextMinifier.job.exe" /d $pwd --noreport
 
 ```
 #### How to transform an XML file using XDT
@@ -66,7 +66,7 @@ if((Test-Path .\final.config)){
     Remove-Item .\final.config
 }
 
-$xdtexe = ('{0}\bin\SlowCheetah.Xdt.exe' -f (Get-NuGetPackage SlowCheetah.Xdt -prerelease))
+$xdtexe = (join-path (Get-NuGetPackage SlowCheetah.Xdt -prerelease -binpath) SlowCheetah.Xdt.exe)
 
 # invoke SlowCheetah.Xdt.exe
 &($xdtexe) .\sample.config .\sample.transform.config .\final.config
@@ -74,4 +74,7 @@ $xdtexe = ('{0}\bin\SlowCheetah.Xdt.exe' -f (Get-NuGetPackage SlowCheetah.Xdt -p
 ```
 
 
+### Release Notes
 
+ - When calling ```Get-NuGetPackage``` the folder where items are expanded is now called ```__bin``` instead of ```bin```. ***This is a breaking change and scripts will need to be updated.*** https://github.com/ligershark/nuget-powershell/issues/5
+ - Added a module manifest to enable versioning the PowerShell module. https://github.com/ligershark/nuget-powershell/issues/4

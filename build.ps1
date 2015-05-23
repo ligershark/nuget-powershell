@@ -26,8 +26,8 @@ param(
     [Parameter(ParameterSetName='build',Position=4)]
     [string]$nugetUrl = $null,
 
-    #[Parameter(ParameterSetName='build',Position=5)]
-    #[switch]$skipTests,
+    [Parameter(ParameterSetName='build',Position=5)]
+    [switch]$skipTests,
 
     # setversion parameters
     [Parameter(ParameterSetName='setversion',Position=1,Mandatory=$true)]
