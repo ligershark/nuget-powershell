@@ -77,7 +77,7 @@ function Get-Nuget{
 
             # double check that is was written to disk
             if(!(Test-Path $nugetDestPath)){
-                throw 'unable to download nuget'
+                throw 'unable to download nuget.exe'
             }
         }
 
