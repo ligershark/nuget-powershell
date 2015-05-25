@@ -18,6 +18,20 @@ $global:NuGetPowerShellSettings = New-Object PSObject -Property @{
     nugetDownloadUrl = 'http://nuget.org/nuget.exe'
 }
 
+function InternalGet-CachePath{
+    [cmdletbinding()]
+    param(
+        $cachePath = $global:NuGetPowerShellSettings.cachePath
+    )
+    process{
+        if(-not (Test-Path $cachePath) ){
+            New-Item -ItemType Directory -Path $cachePath | Out-Null
+        }
+
+        Get-Item $cachePath
+    }
+}
+
 <#
 .SYNOPSIS
     This will return nuget from the $cachePath. If it is not there then it
@@ -26,7 +40,7 @@ $global:NuGetPowerShellSettings = New-Object PSObject -Property @{
 function Get-Nuget{
     [cmdletbinding()]
     param(
-        $toolsDir = $global:NuGetPowerShellSettings.cachePath,
+        $toolsDir = (InternalGet-CachePath),
         $nugetDownloadUrl = $global:NuGetPowerShellSettings.nugetDownloadUrl
     )
     process{
@@ -177,7 +191,7 @@ function Get-NuGetPackage{
         [Parameter(Position=2)]
         [switch]$prerelease,
         [Parameter(Position=3)]
-        $cachePath = $global:NuGetPowerShellSettings.cachePath,
+        $cachePath = (InternalGet-CachePath),
 
         [Parameter(Position=4)]
         [string]$nugetUrl = ('https://nuget.org/api/v2/'),
@@ -192,9 +206,6 @@ function Get-NuGetPackage{
         [switch]$force
     )
     process{
-        if(!(Test-Path $cachePath)){
-            New-Item -Path $cachePath -ItemType Directory | out-null 
-        }
         $cachePath = (Get-Item $cachePath).FullName.TrimEnd('\')
         # if it's already installed just return the path
         [string]$installPath = $null
@@ -384,7 +395,7 @@ function Load-ModuleFromNuGetPackage{
         [switch]$prerelease,
 
         [Parameter(Position=3)]
-        $cachePath = $global:NuGetPowerShellSettings.cachePath,
+        $cachePath = (InternalGet-CachePath),
 
         [Parameter(Position=4)]
         $nugetUrl = ('https://nuget.org/api/v2/'),
@@ -417,7 +428,7 @@ function Get-NuGetPackageExpectedPath{
         [Parameter(Mandatory=$true,Position=1)] # later we can make this optional
         $version,
         [Parameter(Position=2)]
-        $cachePath = $global:NuGetPowerShellSettings.cachePath,
+        $cachePath = (InternalGet-CachePath),
         [Parameter(Position=3)]
         [switch]$expandedPath
     )
