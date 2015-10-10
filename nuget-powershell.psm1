@@ -185,13 +185,13 @@ function Get-NuGetPackage{
     [cmdletbinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
-        $name,
+        [string]$name,
         [Parameter(Position=1)] # later we can make this optional
-        $version,
+        [string]$version,
         [Parameter(Position=2)]
         [switch]$prerelease,
         [Parameter(Position=3)]
-        $cachePath = (InternalGet-CachePath),
+        [System.IO.DirectoryInfo]$cachePath = (InternalGet-CachePath),
 
         [Parameter(Position=4)]
         [string]$nugetUrl = ('https://nuget.org/api/v2/'),
@@ -228,18 +228,23 @@ function Get-NuGetPackage{
             Remove-Item $installPath -Recurse -Force | Write-Verbose
         }
 
-        if(!$installPath -or !(test-path $installPath)){
-            # install the nuget package and then return the path
-            # $outdir = (get-item (Resolve-Path $cachePath)).FullName.TrimEnd("\") # nuget.exe doesn't work well with trailing slash
+        # if installPath has no files then delete the directory before starting
+        if( -not ([string]::IsNullOrWhiteSpace($installPath)) -and (test-path $installPath) -and ( (Get-ChildItem $installPath -Recurse -File).Length -le 0) ){
+            Remove-Item $installPath -Force -Recurse | Write-Verbose
+        }
 
-            if(!(Test-Path $outdir)){
-                New-Item -Path $outdir -ItemType Directory | Out-Null
+        # install the nuget package and then return the path
+        if(!$installPath -or !(test-path $installPath)){
+            $outdirtemp = "$outdir--temp"
+
+            if(!(Test-Path $outdirtemp)){
+                New-Item -Path $outdirtemp -ItemType Directory | Out-Null
             }
 
             # set working directory to avoid needing to specify OutputDirectory, having issues with spaces
             Push-Location | Out-Null
             try{
-                Set-Location $outdir | Out-Null
+                Set-Location $outdirtemp | Out-Null
                 $cmdArgs = @('install',$name)
 
                 if($version){
@@ -260,12 +265,13 @@ function Get-NuGetPackage{
                     $cmdArgs += $nugetUrl
                 }
 
-                $nugetCommand = ('"{0}" {1}' -f (Get-Nuget -toolsDir $cachePath), ($cmdArgs -join ' ' ))
+                $nugetCommand = ('"{0}" {1}' -f (Get-Nuget), ($cmdArgs -join ' ' ))
                 'Calling nuget to install a package with the following args. [{0}]' -f $nugetCommand | Write-Verbose
                 [string[]]$nugetResult = (Execute-CommandString -command $nugetCommand)
                 $nugetResult | Write-Verbose
 
-                if(!$installPath){
+                # TODO: I think this if statement can be removed, but need to investigate more before doing that
+                if(!$outdirtemp){
                     $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult -join "`n")
                     if([string]::IsNullOrWhiteSpace($pkgDirName)){
                         $message = ('Unable to get package name from nuget.exe result [{0}]. Command [{1}]' -f ($nugetResult -join "`n"),$nugetCommand)
@@ -285,17 +291,36 @@ function Get-NuGetPackage{
                 }
 
                 if(!($noexpansion)){
-                   $expbinpath = (Join-Path $outdir '__bin')
+                   $expbinpath = (Join-Path $outdirtemp '__bin')
                    New-Item -Path $expbinpath -ItemType Directory | Out-Null
                    # copy lib folder to bin\
-                   Get-ChildItem $installPath -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
+                   Get-ChildItem $outdirtemp -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
                    # copy tools folder to __bin\
-                   Get-ChildItem $installPath 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
+                   Get-ChildItem $outdirtemp 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
                 }
-                
             }
             finally{
                 Pop-Location | Out-Null
+
+                if(Test-Path $outdirtemp){
+                    # copy all folders because dependencies
+                    foreach($pathtomove in (Get-ChildItem $outdirtemp -Directory)){
+                        [System.IO.DirectoryInfo]$dest = (Join-Path $outdir $pathtomove.BaseName)
+                        if(-not (Test-Path $dest.FullName)){
+                            Move-Item $pathtomove.FullName $outdir | Write-Verbose
+                        }
+                    }
+
+                    [System.IO.DirectoryInfo]$packagefolder = (Get-ChildItem $outdirtemp "$name*" -Directory)
+                    [System.IO.DirectoryInfo]$destinstallpath = (Join-Path $outdir $packagefolder.BaseName)
+                    if(Test-Path $destinstallpath.FullName){
+                        $installPath = $destinstallpath.FullName
+                    }
+                }
+
+                if( (-not ([string]::IsNullOrWhiteSpace($outdirtemp))) -and (Test-Path $outdirtemp) ){
+                    Remove-Item $outdirtemp -Recurse -Force | Out-Null
+                }                
             }
         }
 

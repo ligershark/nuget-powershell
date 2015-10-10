@@ -76,10 +76,7 @@ Describe 'get-nugetpackage tests' {
         $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
 
         $items = (Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse)
-        'files'|Write-Host 
-        Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse| % {$_.FullName | Write-Host}
-        #'files: [{0}]' -f (Get-ChildItem -Path $pkgPath * -Recurse) | Write-Host
-        [System.IO.FileInfo]$result=(Get-ChildItem $nugetPkgInstallPath1 *.nupkg)
+        [System.IO.FileInfo]$result=(Get-ChildItem $nugetPkgInstallPath1 *.nupkg -Recurse)
         $result | Should Not Be $null
         $result.Exists | Should Be $true
     }
@@ -101,6 +98,7 @@ Describe 'get-nugetpackage tests' {
         $newPkgPath | Should Exist
     }
     #>
+
     It 'Returns path when already downloaded' {
         $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
         $pkgPath2 | Should Exist
