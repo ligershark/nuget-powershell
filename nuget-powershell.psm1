@@ -292,17 +292,18 @@ function Get-NuGetPackage{
 
                 if(!($noexpansion)){
                    $expbinpath = (Join-Path $outdirtemp '__bin')
-                   New-Item -Path $expbinpath -ItemType Directory | Out-Null
+                   New-Item -Path $expbinpath -ItemType Directory | Write-Verbose
                    # copy lib folder to bin\
-                   Get-ChildItem $outdirtemp -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
+                   Get-ChildItem $outdirtemp -Directory | InternalGet-LibFolderToUse | Get-ChildItem|Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue | Write-Verbose
                    # copy tools folder to __bin\
-                   Get-ChildItem $outdirtemp 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue
+                   Get-ChildItem $outdirtemp 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue | Write-Verbose
                 }
             }
             finally{
                 Pop-Location | Out-Null
 
                 if(Test-Path $outdirtemp){
+                    [System.IO.DirectoryInfo]$packagefolder = (Get-ChildItem $outdirtemp "$name*" -Directory)
                     # copy all folders because dependencies
                     foreach($pathtomove in (Get-ChildItem $outdirtemp -Directory)){
                         [System.IO.DirectoryInfo]$dest = (Join-Path $outdir $pathtomove.BaseName)
@@ -311,7 +312,6 @@ function Get-NuGetPackage{
                         }
                     }
 
-                    [System.IO.DirectoryInfo]$packagefolder = (Get-ChildItem $outdirtemp "$name*" -Directory)
                     [System.IO.DirectoryInfo]$destinstallpath = (Join-Path $outdir $packagefolder.BaseName)
                     if(Test-Path $destinstallpath.FullName){
                         $installPath = $destinstallpath.FullName
@@ -319,7 +319,7 @@ function Get-NuGetPackage{
                 }
 
                 if( (-not ([string]::IsNullOrWhiteSpace($outdirtemp))) -and (Test-Path $outdirtemp) ){
-                    Remove-Item $outdirtemp -Recurse -Force | Out-Null
+                    Remove-Item $outdirtemp -Recurse -Force | Write-Verbose
                 }                
             }
         }
