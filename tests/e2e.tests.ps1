@@ -67,18 +67,15 @@ Describe 'get-nugetpackage tests' {
     }
 
     It 'Returns path' {
-        $pkgPath1 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
+        $pkgPath1 = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath1 | Should Exist
     }
 
     
     It 'Folder contains .nupkg file'{
-        $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
+        $nugetPkgInstallPath1 = (Get-NuGetPackage -name publish-module -prerelease)
 
-        $items = (Get-ChildItem -Path $nugetPkgInstallPath1 * -Recurse)
-        [System.IO.FileInfo]$result=(Get-ChildItem $nugetPkgInstallPath1 *.nupkg -Recurse)
-        $result | Should Not Be $null
-        $result.Exists | Should Be $true
+        (Get-ChildItem $nugetPkgInstallPath1 *.nupkg -Recurse -File).Length -gt 0 | should be $true
     }
     
     <#
@@ -100,34 +97,34 @@ Describe 'get-nugetpackage tests' {
     #>
 
     It 'Returns path when already downloaded' {
-        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
+        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath2 | Should Exist
-        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
+        $pkgPath2 = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath2 | Should Exist
     }
 
     It 'Can pass in a specific version' {
-        $pkgPath3 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -noexpansion)
+        $pkgPath3 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1)
         $pkgPath3 | Should Exist
     }
 
     It 'Can pass in prerelase' {
-        $pkgPath4 = (Get-NuGetPackage -name publish-module -prerelease -noexpansion)
+        $pkgPath4 = (Get-NuGetPackage -name publish-module -prerelease)
         $pkgPath4 | Should Exist
     }
 
     It 'Can pass in force without passing version' {
-        $pkgPath5 = (Get-NuGetPackage -name publish-module -prerelease -force -noexpansion)
+        $pkgPath5 = (Get-NuGetPackage -name publish-module -prerelease -force)
         $pkgPath5 | Should Exist
     }
 
     It 'Can pass in force with passing version' {
-        $pkgPath6 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force -noexpansion)
+        $pkgPath6 = (Get-NuGetPackage -name publish-module -version 1.0.1-beta1 -force)
         $pkgPath6 | Should Exist
     }
 
     It 'Can install azureimageoptimizer' {
-        $pkgPath7 = (Get-NuGetPackage -name AzureImageOptimizer -prerelease -noexpansion)
+        $pkgPath7 = (Get-NuGetPackage -name AzureImageOptimizer -prerelease)
         $pkgPath7 | Should Exist
     }
 
