@@ -14,7 +14,7 @@ function Get-ScriptDirectory
 $scriptDir = ((Get-ScriptDirectory) + "\")
 
 $global:NuGetPowerShellSettings = New-Object PSObject -Property @{
-    cachePath = "$env:LOCALAPPDATA\LigerShark\nuget-ps\v1\"
+    cachePath = "$env:LOCALAPPDATA\LigerShark\nuget-ps\v1.1\"
     nugetDownloadUrl = 'http://nuget.org/nuget.exe'
 }
 
@@ -181,7 +181,128 @@ function Execute-CommandString{
     Get-NuGetPackage psbuild -version 0.0.6-beta5 -nugetUrl https://staging.nuget.org
     Downloads psbuild version 0.0.6-beta5 fro staging.nuget.org
 #>
+
 function Get-NuGetPackage{
+   [cmdletbinding()]
+    param(
+        [Parameter(Mandatory=$true,Position=0)]
+        [string]$name,
+        [Parameter(Position=1)] # later we can make this optional
+        [string]$version,
+        [Parameter(Position=2)]
+        [switch]$prerelease,
+        [Parameter(Position=3)]
+        [System.IO.DirectoryInfo]$cachePath = (InternalGet-CachePath),
+
+        [Parameter(Position=4)]
+        [string]$nugetUrl = ('https://nuget.org/api/v2/'),
+
+        [Parameter(Position=6)]
+        [switch]$binpath,
+
+        [Parameter(Position=7)]
+        [switch]$force
+    )
+    process{
+        [string]$foldername = $name
+        if(-not ([string]::IsNullOrWhiteSpace($version))){
+            $foldername = ('{0}.{1}' -f $name,$version)
+        }
+
+        [System.IO.DirectoryInfo]$expectedPath = (Join-Path $cachePath $foldername)
+
+        if( -not (Test-Path $expectedPath) -or 
+            ( (Get-ChildItem $expectedPath -Recurse -File).Length -le 0 ) -or 
+            $force ) {
+
+            # install to a temp dir
+            [System.IO.DirectoryInfo]$tempfolder = (InternalGet-NewTempFolder)
+            try{
+                Push-Location | Out-Null
+                Set-Location ($tempfolder.FullName) | Out-Null
+                # install the nuget package here
+                $cmdArgs = @('install',$name)
+
+                if($version){
+                    $cmdArgs += '-Version'
+                    $cmdArgs += "$version"
+
+                    $prerelease = $true
+                }
+
+                if($prerelease){
+                    $cmdArgs += '-prerelease'
+                }
+
+                $cmdArgs += '-NonInteractive'
+
+                if($nugetUrl -and !([string]::IsNullOrWhiteSpace($nugetUrl))){
+                    $cmdArgs += "-source"
+                    $cmdArgs += $nugetUrl
+                }
+
+                $nugetCommand = ('"{0}" {1}' -f (Get-Nuget), ($cmdArgs -join ' ' ))
+                'Calling nuget to install a package with the following args. [{0}]' -f $nugetCommand | Write-Verbose
+                [string[]]$nugetResult = (Execute-CommandString -command $nugetCommand)
+                $nugetResult | Write-Verbose
+                
+                # combine results into a single __bin folder
+                $expbinpath = (Join-Path $tempfolder '__bin')
+                New-Item -Path $expbinpath -ItemType Directory | Write-Verbose
+                # copy lib folder to bin\
+                Get-ChildItem $tempfolder -Directory | InternalGet-LibFolderToUse | Get-ChildItem | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue | Write-Verbose
+                # copy tools folder to __bin\
+                Get-ChildItem $tempfolder 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue | Write-Verbose
+
+                # copy files to the dest folder
+                if($force -and (Test-Path $expectedPath)){
+                    # delete the folder and re-install
+                    Remove-Item $expectedPath -Recurse | Write-Verbose
+                }
+
+                if(-not (test-path $expectedPath)){
+                    New-Item -ItemType Directory -Path $expectedPath | Write-Verbose
+                }
+
+                foreach($pathtomove in (Get-ChildItem $tempfolder -Directory)){
+                    [System.IO.DirectoryInfo]$dest = (Join-Path $expectedPath $pathtomove.BaseName)
+                    if(-not (Test-Path $dest.FullName)){
+                        Move-Item $pathtomove.FullName $expectedPath | Write-Verbose
+                    }
+                }
+            }
+            finally{
+                Pop-Location | Out-Null
+                # delete the temp folder
+                if( -not ([string]::IsNullOrWhiteSpace($tempfolder) ) -and (Test-Path $tempfolder) ){
+                    Remove-Item -Path $tempfolder -Recurse -ErrorAction SilentlyContinue | Write-Verbose
+                }
+            }
+        }
+
+        # return the full path
+        if($binpath){
+            (Get-Item (Join-Path $expectedPath '__bin')).FullName
+        }
+        else{
+            $expectedPath.FullName
+        }
+    }
+}
+
+function InternalGet-NewTempFolder{
+    [cmdletbinding()]
+    param(
+        [System.IO.DirectoryInfo]$tempFolder = ([System.IO.Path]::GetTempPath())
+    )
+    process{
+        $foldername = [Guid]::NewGuid()
+        New-Item -ItemType Directory -Path (Join-Path $tempFolder $foldername) | Write-Verbose
+        Get-Item -Path (Join-Path $tempFolder $foldername)
+    }
+}
+
+function Get-NuGetPackageOld{
     [cmdletbinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
@@ -270,7 +391,6 @@ function Get-NuGetPackage{
                 [string[]]$nugetResult = (Execute-CommandString -command $nugetCommand)
                 $nugetResult | Write-Verbose
 
-                # TODO: I think this if statement can be removed, but need to investigate more before doing that
                 if(!$outdirtemp){
                     $pkgDirName = InternalGet-PackagePathFromNuGetOutput -nugetOutput ($nugetResult -join "`n")
                     if([string]::IsNullOrWhiteSpace($pkgDirName)){
@@ -299,6 +419,9 @@ function Get-NuGetPackage{
                    Get-ChildItem $outdirtemp 'tools' -Directory -Recurse | Get-ChildItem -Exclude *.ps*1 | Copy-Item -Destination $expbinpath -Recurse -ErrorAction SilentlyContinue | Write-Verbose
                 }
             }
+            catch{
+                throw ('Unable to get the nuget package . [{0}]. {1}' -f $_.exception,(Get-PSCallStack))
+            }
             finally{
                 Pop-Location | Out-Null
 
@@ -314,8 +437,10 @@ function Get-NuGetPackage{
 
                     [System.IO.DirectoryInfo]$destinstallpath = (Join-Path $outdir $packagefolder.BaseName)
                     if(Test-Path $destinstallpath.FullName){
-                        $installPath = $destinstallpath.FullName
+                        $installPath = $destinstallpath.FullNam
                     }
+                    
+                    $installPath = $outdir
                 }
 
                 if( (-not ([string]::IsNullOrWhiteSpace($outdirtemp))) -and (Test-Path $outdirtemp) ){
@@ -429,7 +554,7 @@ function Load-ModuleFromNuGetPackage{
         [switch]$force
     )
     process{
-        $pkgDir = Get-NuGetPackage -name $name -version $version -prerelease:$prerelease -nugetUrl $nugetUrl -force:$force -noexpansion
+        $pkgDir = Get-NuGetPackage -name $name -version $version -prerelease:$prerelease -nugetUrl $nugetUrl -force:$force -binpath
 
         $modules = (Get-ChildItem ("$pkgDir\tools") '*.psm1' -ErrorAction SilentlyContinue)
         foreach($module in $modules){
