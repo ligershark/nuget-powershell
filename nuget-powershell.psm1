@@ -434,6 +434,13 @@ function Get-NuGetPackageExpectedPath{
     }
 }
 
+function Get-NuGetPowerShellVersion{
+    param()
+    process{
+        New-Object -TypeName 'system.version' -ArgumentList '0.2.5.1'
+    }
+}
+
 if(!$env:IsDeveloperMachine){
     Export-ModuleMember -function Get-*,Set-*,Invoke-*,Save-*,Test-*,Find-*,Add-*,Remove-*,Test-*,Open-*,New-*,Execute-*,Update-*,Load-*
 }

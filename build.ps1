@@ -264,7 +264,8 @@ function Set-Version{
         $folder = $scriptDir
         $include = '*.nuspec;*.ps*1'
         # In case the script is in the same folder as the files you are replacing add it to the exclude list
-        $exclude = "$($MyInvocation.MyCommand.Name);"
+        #$exclude = "$($MyInvocation.MyCommand.Name);"
+        $exclude = ''
         $replacements = @{
             "$oldversion"="$newversion"
         }
