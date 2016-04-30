@@ -14,7 +14,7 @@ function Get-PsModulesPath{
         $ModulePaths = @($Env:PSModulePath -split ';')
 
         $ExpectedUserModulePath = Join-Path -Path ([Environment]::GetFolderPath('MyDocuments')) -ChildPath WindowsPowerShell\Modules
-        $Destination = $ModulePaths | Where-Object { $_ -eq $ExpectedUserModulePath}
+        $Destination = ($ModulePaths | Where-Object { $_ -eq $ExpectedUserModulePath} | Select-Object -First 1)
         if (-not $Destination) {
             $Destination = $ModulePaths | Select-Object -Index 0
         }
